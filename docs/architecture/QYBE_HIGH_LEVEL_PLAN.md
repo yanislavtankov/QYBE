@@ -68,6 +68,8 @@ The plan is intentionally declarative. QYBE should first explain what it would d
 - Support static defaults and YAML/administrative overlays.
 - Keep business function, industry, task type, risk, and data class as separate dimensions.
 - Allow domain packs to recommend capabilities, evaluation criteria, tools, and model characteristics, not to bypass policy.
+- Add `visual_reasoning_canvas` as an optional capability for engineering and academic domain packs, with handwriting, equations, diagrams, spatial context, evidence binding, and explicit AI-draft review.
+- Follow the dedicated [PenEcho visual reasoning integration plan](PENECHO_VISUAL_REASONING_DOMAIN_PLAN.md): QYBE owns orchestration, policy, RAG, provenance, persistence, and model/runtime selection, while PenEcho remains a replaceable reference implementation or isolated adapter candidate rather than a core dependency.
 
 ### 4.3 Model and runtime resolution
 
@@ -300,12 +302,16 @@ Prefer:
 2. Continue shadow orchestration, preferences, `CapabilityPlan`, and evaluation APIs.
 3. Implement data classification, egress decisions, and declarative tool/model/runtime plans.
 4. Add execution-plan preview and controlled feature flags.
-5. Run the developer-side Headroom pilot in parallel because it is isolated from product runtime.
-6. Add `ContextOptimizationPlan` and a Headroom shadow adapter only after policy boundaries are stable.
-7. Consider controlled production optimization after QYBE-specific quality, privacy, latency, and rollback gates pass.
+5. Define the visual-reasoning capability contract and complete the PenEcho architecture, security, and licensing evaluation for engineering and academic domain packs.
+6. Run the developer-side Headroom pilot in parallel because it is isolated from product runtime.
+7. Add `ContextOptimizationPlan` and a Headroom shadow adapter only after policy boundaries are stable.
+8. Consider controlled production optimization after QYBE-specific quality, privacy, latency, and rollback gates pass.
 
 ## 11. Decision log
 
+- **2026-07-23 — PenEcho:** retained as a reference implementation and optional isolated adapter candidate for engineering and academic visual reasoning; no code integration is approved by this roadmap entry.
+- **2026-07-23 — PenEcho boundary:** visual reasoning is a provider-neutral QYBE domain capability. QYBE retains orchestration, policy, RAG, provenance, persistence, and model/runtime authority.
+- **2026-07-23 — PenEcho licensing:** protocol study and value validation precede any embedding; AGPL obligations or an alternative commercial license require explicit approval before PenEcho code enters the QYBE product boundary.
 - **2026-07-23 — Headroom:** useful enough to retain in the roadmap as a developer-efficiency pilot and future optional context-optimization adapter. It is not approved as a QYBE core runtime dependency or default proxy.
 - **2026-07-23 — Integration boundary:** QYBE owns policy and the `ContextOptimizationPlan`; Headroom, QYBE-native compaction, and future alternatives are replaceable implementations.
 - **2026-07-23 — Rollout:** telemetry off, audit/shadow first, deterministic structured-output optimization before ML compression, and mandatory baseline benchmarking.
