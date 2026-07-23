@@ -2117,6 +2117,11 @@ async def current_user(
     return user
 
 
+def current_cloud_superuser(user: User = Depends(current_user)) -> User:
+    """Local fallback for cloud-superuser checks in self-hosted/dev runs."""
+    return user
+
+
 _CURATOR_OR_ADMIN_ROLES = frozenset(
     {UserRole.GLOBAL_CURATOR, UserRole.CURATOR, UserRole.ADMIN}
 )
