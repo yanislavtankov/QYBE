@@ -129,9 +129,10 @@ function buildItems(
     });
   }
 
-  // 5. Integrations (admin only)
+  // 5. Integrations
+  // Token management should be visible to all roles.
+  addGated(SECTIONS.INTEGRATIONS, ADMIN_ROUTES.API_KEYS, Tier.BUSINESS);
   if (!isCurator) {
-    addGated(SECTIONS.INTEGRATIONS, ADMIN_ROUTES.API_KEYS, Tier.BUSINESS);
     add(SECTIONS.INTEGRATIONS, ADMIN_ROUTES.SLACK_BOTS);
     add(SECTIONS.INTEGRATIONS, ADMIN_ROUTES.DISCORD_BOTS);
     if (hooksEnabled) {
@@ -148,20 +149,21 @@ function buildItems(
     add(SECTIONS.PERMISSIONS, ADMIN_ROUTES.GROUPS);
   }
 
-  // 7. Usage (admin only)
+  // 7. Usage
+  // Usage analytics and query history are intentionally surfaced to curators
+  // as well; the more sensitive admin-only controls stay gated below.
+  if (!enableCloud) {
+    add(SECTIONS.USAGE, ADMIN_ROUTES.TRACING);
+  }
+  addGated(SECTIONS.USAGE, ADMIN_ROUTES.USAGE, Tier.BUSINESS);
+  if (
+    settings?.query_history_type !== "disabled" &&
+    !settings?.hide_query_history_from_admin_panel
+  ) {
+    addGated(SECTIONS.USAGE, ADMIN_ROUTES.QUERY_HISTORY, Tier.BUSINESS);
+  }
   if (!isCurator) {
-    // Tracing config is not supported on multi-tenant cloud.
-    if (!enableCloud) {
-      add(SECTIONS.USAGE, ADMIN_ROUTES.TRACING);
-    }
-    addGated(SECTIONS.USAGE, ADMIN_ROUTES.USAGE, Tier.BUSINESS);
     addGated(SECTIONS.USAGE, ADMIN_ROUTES.TOKEN_RATE_LIMITS, Tier.ENTERPRISE);
-    if (
-      settings?.query_history_type !== "disabled" &&
-      !settings?.hide_query_history_from_admin_panel
-    ) {
-      addGated(SECTIONS.USAGE, ADMIN_ROUTES.QUERY_HISTORY, Tier.BUSINESS);
-    }
   }
 
   // 8. Organization (admin only)
@@ -243,6 +245,7 @@ export default function AdminSidebar() {
     "Security & Hardening": t("routes.securityHardening"),
     "SSO Providers": t("routes.ssoProviders"),
     "Service Accounts": t("routes.serviceAccounts"),
+    "Access Tokens": t("routes.accessTokens"),
     "Plans & Billing": t("routes.billing"),
     "Upgrade Plan": t("routes.upgradePlan"),
     "OAuth Test": t("routes.oauthTest"),

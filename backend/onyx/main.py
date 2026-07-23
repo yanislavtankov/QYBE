@@ -23,6 +23,9 @@ from sentry_sdk.integrations.fastapi import FastApiIntegration
 from sentry_sdk.integrations.starlette import StarletteIntegration
 from starlette.types import Lifespan
 
+from ee.onyx.server.analytics.api import router as analytics_router
+from ee.onyx.server.query_history.api import router as query_history_router
+from ee.onyx.server.reporting.usage_export_api import router as usage_export_router
 from onyx import __version__
 from onyx.auth.schemas import UserCreate
 from onyx.auth.schemas import UserRead
@@ -558,6 +561,9 @@ def get_application(lifespan_override: Lifespan | None = None) -> FastAPI:
     include_router_with_global_prefix_prepended(application, settings_admin_router)
     include_router_with_global_prefix_prepended(application, enterprise_router)
     include_router_with_global_prefix_prepended(application, enterprise_admin_router)
+    include_router_with_global_prefix_prepended(application, analytics_router)
+    include_router_with_global_prefix_prepended(application, query_history_router)
+    include_router_with_global_prefix_prepended(application, usage_export_router)
     include_router_with_global_prefix_prepended(application, security_admin_router)
     include_router_with_global_prefix_prepended(application, sso_admin_router)
     include_router_with_global_prefix_prepended(application, llm_admin_router)

@@ -213,6 +213,7 @@
       "mcpActions": "MCP действия",
       "openapiActions": "OpenAPI действия",
       "apiKeys": "API ключове",
+      "accessTokens": "Токени за достъп",
       "users": "Потребители",
       "groups": "Групи",
       "scim": "SCIM",

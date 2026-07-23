@@ -204,8 +204,8 @@ export const ADMIN_ROUTES = {
   API_KEYS: {
     path: "/admin/service-accounts",
     icon: SvgUserKey,
-    title: "Service Accounts",
-    sidebarLabel: "Service Accounts",
+    title: "Access Tokens",
+    sidebarLabel: "Access Tokens",
   },
   TOKEN_RATE_LIMITS: {
     path: "/admin/token-rate-limits",

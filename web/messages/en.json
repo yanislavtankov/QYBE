@@ -213,6 +213,7 @@
       "mcpActions": "MCP Actions",
       "openapiActions": "OpenAPI Actions",
       "apiKeys": "API Keys",
+      "accessTokens": "Access Tokens",
       "users": "Users",
       "groups": "Groups",
       "scim": "SCIM",
