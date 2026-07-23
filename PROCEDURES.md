@@ -6,6 +6,14 @@
 ==========================================================================================
 chmod +x start.sh
 ./start.sh
+
+-----------------------------------------
+
+cd /home/newmarkai/projects/QYBE
+source "$HOME/.local/bin/env"
+source .venv/bin/activate
+export PATH="$HOME/.bun/bin:$PATH"
+INTERNAL_URL=http://127.0.0.1:8080 uv run --with onyx-devtools ods web dev
 ==========================================================================================
 
 # One-time setup (run once)

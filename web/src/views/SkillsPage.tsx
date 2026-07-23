@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { Route } from "next";
 import {
   Button,
@@ -41,6 +41,10 @@ import { useTranslations } from "next-intl";
 export default function SkillsPage() {
   const t = useTranslations("skills");
   const router = useRouter();
+  const pathname = usePathname();
+  const skillBasePath = pathname.startsWith("/admin/craft/skills")
+    ? "/admin/craft/skills"
+    : "/craft/v1/skills";
   const { data, error, isLoading, refresh } = useUserSkills();
   const [searchQuery, setSearchQuery] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
@@ -61,7 +65,7 @@ export default function SkillsPage() {
   });
 
   function handleEdit(item: CustomSkillCardItem) {
-    router.push(`/craft/v1/skills/edit/${item.id}` as Route);
+    router.push(`${skillBasePath}/edit/${item.id}` as Route);
   }
 
   async function handleEnabledChange(item: SkillCardItem, enabled: boolean) {
@@ -190,7 +194,7 @@ export default function SkillsPage() {
                   wrapDescription
                   onClick={() => {
                     setCreateMenuOpen(false);
-                    router.push("/craft/v1/skills/new" as Route);
+                    router.push(`${skillBasePath}/new` as Route);
                   }}
                 >
                   {t("startFromScratch")}

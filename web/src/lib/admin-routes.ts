@@ -24,6 +24,7 @@ import {
   SvgProgressBars,
   SvgSearchMenu,
   SvgShield,
+  SvgSparkle,
   SvgTerminal,
   SvgThumbsUp,
   SvgUploadCloud,
@@ -175,6 +176,12 @@ export const ADMIN_ROUTES = {
     icon: SvgDevKit,
     title: "Instructions",
     sidebarLabel: "Instructions",
+  },
+  CRAFT_SKILLS: {
+    path: "/admin/craft/skills",
+    icon: SvgSparkle,
+    title: "Skills",
+    sidebarLabel: "Skills",
   },
   INDEX_SETTINGS: {
     path: "/admin/configuration/index-settings",

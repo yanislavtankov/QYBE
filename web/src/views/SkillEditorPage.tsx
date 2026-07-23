@@ -8,7 +8,7 @@ import {
   type FormEvent,
 } from "react";
 import useSWR, { useSWRConfig } from "swr";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import type { Route } from "next";
 import {
   Button,
@@ -98,6 +98,10 @@ function getSharingStatus(skill: SkillEditableDetail): {
 export default function SkillEditorPage({ skillId }: SkillEditorPageProps) {
   const isCreating = skillId === undefined;
   const router = useRouter();
+  const pathname = usePathname();
+  const skillBasePath = pathname.startsWith("/admin/craft/skills")
+    ? "/admin/craft/skills"
+    : "/craft/v1/skills";
   const { mutate } = useSWRConfig();
   const {
     data: skill,
@@ -181,7 +185,7 @@ export default function SkillEditorPage({ skillId }: SkillEditorPageProps) {
     !isSaving;
 
   function navigateBack() {
-    router.push("/craft/v1/skills" as Route);
+    router.push(skillBasePath as Route);
   }
 
   async function refreshSkillList() {
@@ -204,7 +208,7 @@ export default function SkillEditorPage({ skillId }: SkillEditorPageProps) {
         );
         await refreshSkillList();
         toast.success(`Created "${created.name}"`);
-        router.replace(`/craft/v1/skills/edit/${created.id}` as Route);
+        router.replace(`${skillBasePath}/edit/${created.id}` as Route);
         return;
       }
 

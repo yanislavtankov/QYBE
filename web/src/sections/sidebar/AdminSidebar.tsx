@@ -96,8 +96,16 @@ function buildItems(
     }
   }
 
-  // 2. Craft (admin only, deployment-gated)
-  if (!isCurator && settings?.onyx_craft_available === true) {
+  // 2. Craft (admin-only controls + global Skills entry)
+  // Skills should be visible to every role regardless of Craft flags.
+  add(SECTIONS.CRAFT, ADMIN_ROUTES.CRAFT_SKILLS);
+
+  // Some deployments expose Craft via `onyx_craft_enabled` without populating
+  // `onyx_craft_available`; allow either signal for admin-only controls.
+  const craftAdminControlsVisible =
+    settings?.onyx_craft_available === true ||
+    settings?.onyx_craft_enabled === true;
+  if (!isCurator && craftAdminControlsVisible) {
     add(SECTIONS.CRAFT, ADMIN_ROUTES.CRAFT_ACCESS);
     add(SECTIONS.CRAFT, ADMIN_ROUTES.CRAFT_APPS);
     add(SECTIONS.CRAFT, ADMIN_ROUTES.CRAFT_INSTRUCTIONS);
@@ -220,6 +228,7 @@ export default function AdminSidebar() {
     Access: t("routes.craftAccess"),
     Apps: t("routes.craftApps"),
     Instructions: t("routes.craftInstructions"),
+    Skills: t("routes.craftSkills"),
     "MCP Actions": t("routes.mcpActions"),
     "OpenAPI Actions": t("routes.openapiActions"),
     "API Keys": t("routes.apiKeys"),
