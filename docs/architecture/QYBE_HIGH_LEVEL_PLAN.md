@@ -1,7 +1,7 @@
 # QYBE High-Level Development Plan
 
 **Status:** Directional architecture and roadmap  
-**Updated:** 2026-07-23  
+**Updated:** 2026-07-27  
 **Base branch:** `dev`  
 **Implementation rule:** roadmap items do not enable production behavior by themselves.
 
@@ -112,6 +112,19 @@ The plan is intentionally declarative. QYBE should first explain what it would d
 - Explore local-first generation of small internal business applications in an isolated sandbox.
 - Reuse QYBE document, connector, tool, code-execution, and policy infrastructure.
 - Require generated code review, tests, dependency inspection, egress controls, and explicit deployment approval.
+
+### 4.9 Web discovery and browser execution
+
+- Separate web discovery from page execution: a provider-neutral `SearchProvider` finds candidate URLs, while a provider-neutral `BrowserProvider` retrieves pages, executes permitted JavaScript, performs bounded interactions, and returns typed content with provenance.
+- Keep OpenSERP, SearXNG, external search APIs, and future discovery providers replaceable; Lightpanda is not a search-engine replacement.
+- Define QYBE-owned browser adapters for static HTTP retrieval, Lightpanda, and Chromium/Playwright.
+- Route static and simple pages to HTTP retrieval, JavaScript-dependent extraction to the Lightpanda fast path, and screenshots, PDFs, visual verification, complex authentication, unsupported sites, or failed Lightpanda sessions to Chromium.
+- Retain Lightpanda as an experimental optional provider, not the sole browser runtime and not a production default until QYBE-specific compatibility and reliability gates pass.
+- Keep QYBE responsible for orchestration, model selection, tool planning, session policy, evidence, and fallback; do not delegate these responsibilities to Lightpanda's native LLM-agent mode.
+- Apply `DataClassification`, `DataEgressDecision`, organization allow/deny policy, SSRF protection, private-network and metadata-endpoint blocking, response-size limits, navigation timeouts, cookie/session isolation, retention limits, and complete source provenance before controlled use.
+- Deploy Lightpanda as an isolated, version-pinned, glibc-based ARM64 sidecar where appropriate, with telemetry and core dumps disabled, health checks, bounded concurrency, process recycling, and automatic Chromium fallback.
+- Benchmark extraction correctness, JavaScript compatibility, latency, memory, crash rate, timeout rate, session isolation, and fallback frequency on a representative QYBE web corpus; upstream benchmark claims are not QYBE performance evidence.
+- Preserve an explicit licensing boundary: prefer unmodified process-level integration through MCP, CDP, or CLI, retain notices and corresponding-source obligations, and require legal review before modifying or commercially redistributing AGPL-covered Lightpanda components.
 
 ## 5. Context and cost optimization track
 
@@ -302,13 +315,17 @@ Prefer:
 2. Continue shadow orchestration, preferences, `CapabilityPlan`, and evaluation APIs.
 3. Implement data classification, egress decisions, and declarative tool/model/runtime plans.
 4. Add execution-plan preview and controlled feature flags.
-5. Define the visual-reasoning capability contract and complete the PenEcho architecture, security, and licensing evaluation for engineering and academic domain packs.
-6. Run the developer-side Headroom pilot in parallel because it is isolated from product runtime.
-7. Add `ContextOptimizationPlan` and a Headroom shadow adapter only after policy boundaries are stable.
-8. Consider controlled production optimization after QYBE-specific quality, privacy, latency, and rollback gates pass.
+5. Define the provider-neutral web discovery and browser-execution contracts, then run a shadow extraction PoC with static HTTP, Lightpanda, and Chromium fallback on a representative QYBE corpus.
+6. Define the visual-reasoning capability contract and complete the PenEcho architecture, security, and licensing evaluation for engineering and academic domain packs.
+7. Run the developer-side Headroom pilot in parallel because it is isolated from product runtime.
+8. Add `ContextOptimizationPlan` and a Headroom shadow adapter only after policy boundaries are stable.
+9. Consider controlled production browser routing and context optimization only after QYBE-specific quality, privacy, security, compatibility, latency, licensing, and rollback gates pass.
 
 ## 11. Decision log
 
+- **2026-07-27 — Lightpanda:** retained as an experimental optional `BrowserProvider` for JavaScript-rendered extraction and simple bounded browser interactions. It does not replace OpenSERP/SearXNG discovery or Chromium compatibility and visual execution.
+- **2026-07-27 — Browser boundary:** QYBE owns search routing, organization policy, data classification, session isolation, tool orchestration, provenance, quality checks, and fallback. Lightpanda is a replaceable fast path; Chromium remains the compatibility, screenshot, PDF, visual-verification, and complex-authentication path.
+- **2026-07-27 — Lightpanda rollout:** start with a pinned isolated ARM64 sidecar, telemetry and core dumps disabled, strict SSRF/network controls, shadow evaluation, and automatic fallback. AGPL obligations and commercial distribution implications require explicit review before modification or redistribution.
 - **2026-07-23 — PenEcho:** retained as a reference implementation and optional isolated adapter candidate for engineering and academic visual reasoning; no code integration is approved by this roadmap entry.
 - **2026-07-23 — PenEcho boundary:** visual reasoning is a provider-neutral QYBE domain capability. QYBE retains orchestration, policy, RAG, provenance, persistence, and model/runtime authority.
 - **2026-07-23 — PenEcho licensing:** protocol study and value validation precede any embedding; AGPL obligations or an alternative commercial license require explicit approval before PenEcho code enters the QYBE product boundary.
