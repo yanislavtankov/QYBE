@@ -38,6 +38,7 @@ User request
   -> Shadow RouteDecision
   -> ChatModelSelectionPreference
   -> ChatWorkflowPreference / TaskModePreference
+  -> WorkflowDefinition / WorkflowPlan
   -> CapabilityPlan
   -> DataClassification
   -> DataEgressDecision
@@ -58,6 +59,8 @@ The plan is intentionally declarative. QYBE should first explain what it would d
 - Keep the existing multidimensional router advisory and shadow-only.
 - Add explicit user preferences for automatic/local/mixed/explicit model selection.
 - Add workflow/task preferences without removing existing manual modes.
+- Introduce a versioned, provider-neutral `WorkflowDefinition` and `WorkflowRun` model for reusable user and domain workflows.
+- Compile workflow definitions into policy-enriched execution graphs rather than executing framework-specific YAML or code directly.
 - Build `CapabilityPlan` as a provider-neutral description of required abilities.
 - Generate an `ExecutionGraphPreview` before controlled execution.
 - Separate planner, worker, and verifier roles where this reduces cost or improves reliability.
@@ -125,6 +128,15 @@ The plan is intentionally declarative. QYBE should first explain what it would d
 - Deploy Lightpanda as an isolated, version-pinned, glibc-based ARM64 sidecar where appropriate, with telemetry and core dumps disabled, health checks, bounded concurrency, process recycling, and automatic Chromium fallback.
 - Benchmark extraction correctness, JavaScript compatibility, latency, memory, crash rate, timeout rate, session isolation, and fallback frequency on a representative QYBE web corpus; upstream benchmark claims are not QYBE performance evidence.
 - Preserve an explicit licensing boundary: prefer unmodified process-level integration through MCP, CDP, or CLI, retain notices and corresponding-source obligations, and require legal review before modifying or commercially redistributing AGPL-covered Lightpanda components.
+
+### 4.10 User-defined workflows and runtime adapters
+
+- Build a template-first workflow builder with constrained step types, typed inputs/outputs, graph validation, budgets, approvals, checkpoints, versioning, and execution preview.
+- Start with an Academic Research and Writing workflow: evidence-first source research, outline approval, bounded chapter generation, citation validation, consistency checks, and editable artifact assembly.
+- Keep workflow definitions independent of any execution framework.
+- Define a QYBE-owned `WorkflowRuntimeAdapter` so QYBE-native, PraisonAI, and future runtimes remain replaceable.
+- QYBE retains authority over identity, RBAC, secrets, tools, connectors, model/runtime resolution, data classification, egress, provenance, persistence, telemetry, and artifacts.
+- Follow the dedicated [PraisonAI workflow runtime integration plan](PRAISONAI_WORKFLOW_RUNTIME_PLAN.md). PraisonAI is a high-opportunity isolated adapter candidate and reference implementation, not the QYBE orchestration or policy authority.
 
 ## 5. Context and cost optimization track
 
@@ -314,15 +326,22 @@ Prefer:
 1. Stabilize the fresh QYBE/Onyx foundation, development workflow, branding, localization, and upstream upgrade process.
 2. Continue shadow orchestration, preferences, `CapabilityPlan`, and evaluation APIs.
 3. Implement data classification, egress decisions, and declarative tool/model/runtime plans.
-4. Add execution-plan preview and controlled feature flags.
-5. Define the provider-neutral web discovery and browser-execution contracts, then run a shadow extraction PoC with static HTTP, Lightpanda, and Chromium fallback on a representative QYBE corpus.
-6. Define the visual-reasoning capability contract and complete the PenEcho architecture, security, and licensing evaluation for engineering and academic domain packs.
-7. Run the developer-side Headroom pilot in parallel because it is isolated from product runtime.
-8. Add `ContextOptimizationPlan` and a Headroom shadow adapter only after policy boundaries are stable.
-9. Consider controlled production browser routing and context optimization only after QYBE-specific quality, privacy, security, compatibility, latency, licensing, and rollback gates pass.
+4. Define `WorkflowDefinition`, `WorkflowRun`, `WorkflowRuntimeAdapter`, and workflow-aware `ExecutionGraphPreview` contracts.
+5. Build the template-first Academic Research and Writing workflow with evidence, outline approval, bounded chapter generation, citation checks, and editable artifact output.
+6. Evaluate an isolated PraisonAI shadow adapter after QYBE policy, model, tool, persistence, and event boundaries are enforceable.
+7. Add controlled live workflow execution, checkpoints, pause/resume, cancellation, retries, and hard budgets behind feature flags.
+8. Define the provider-neutral web discovery and browser-execution contracts, then run a shadow extraction PoC with static HTTP, Lightpanda, and Chromium fallback on a representative QYBE corpus.
+9. Define the visual-reasoning capability contract and complete the PenEcho architecture, security, and licensing evaluation for engineering and academic domain packs.
+10. Run the developer-side Headroom pilot in parallel because it is isolated from product runtime.
+11. Add `ContextOptimizationPlan` and a Headroom shadow adapter only after policy boundaries are stable.
+12. Consider controlled production workflow execution, browser routing, and context optimization only after QYBE-specific quality, provenance, privacy, security, compatibility, latency, licensing, durability, and rollback gates pass.
 
 ## 11. Decision log
 
+- **2026-07-27 — PraisonAI opportunity:** high strategic fit for user-defined and domain-template workflows, especially research, planning, iterative generation, validation, and artifact production.
+- **2026-07-27 — PraisonAI boundary:** QYBE owns the canonical workflow schema, policy enrichment, model/tool brokers, run state, provenance, telemetry, and user experience. PraisonAI is a replaceable isolated runtime adapter candidate.
+- **2026-07-27 — Workflow MVP:** begin with a governed Academic Research and Writing template before exposing a general visual workflow builder or arbitrary framework configuration.
+- **2026-07-27 — Workflow rollout:** declarative definition and preview first; shadow adapter second; controlled execution, durability, advanced branching, parallelism, and loops only after measurable gates pass.
 - **2026-07-27 — Lightpanda:** retained as an experimental optional `BrowserProvider` for JavaScript-rendered extraction and simple bounded browser interactions. It does not replace OpenSERP/SearXNG discovery or Chromium compatibility and visual execution.
 - **2026-07-27 — Browser boundary:** QYBE owns search routing, organization policy, data classification, session isolation, tool orchestration, provenance, quality checks, and fallback. Lightpanda is a replaceable fast path; Chromium remains the compatibility, screenshot, PDF, visual-verification, and complex-authentication path.
 - **2026-07-27 — Lightpanda rollout:** start with a pinned isolated ARM64 sidecar, telemetry and core dumps disabled, strict SSRF/network controls, shadow evaluation, and automatic fallback. AGPL obligations and commercial distribution implications require explicit review before modification or redistribution.
