@@ -1,7 +1,7 @@
 # QYBE High-Level Development Plan
 
 **Status:** Directional architecture and roadmap  
-**Updated:** 2026-07-27  
+**Updated:** 2026-07-30  
 **Base branch:** `dev`  
 **Implementation rule:** roadmap items do not enable production behavior by themselves.
 
@@ -28,6 +28,7 @@ QYBE should reuse the mature chat, RAG, connectors, actions/MCP, Deep Research, 
 6. New infrastructure capabilities must be provider-neutral and replaceable through adapters.
 7. Every optimization must be benchmarked against an unmodified baseline; token reduction alone is not a success criterion.
 8. Feature work uses focused branches from an updated `dev`, focused commits, and targeted automated tests.
+9. Reversible pseudonymization mappings, encryption keys, and original sensitive values must remain local, tenant-scoped, and excluded from external payloads, logs, traces, and telemetry.
 
 ## 3. Target control-plane flow
 
@@ -42,6 +43,7 @@ User request
   -> CapabilityPlan
   -> DataClassification
   -> DataEgressDecision
+  -> PrivacyTransformationPlan
   -> ToolPlan
   -> ModelPlan
   -> RuntimePlan
@@ -86,6 +88,9 @@ The plan is intentionally declarative. QYBE should first explain what it would d
 
 - Classify the request and each retrieved/tool-produced data object before any external call.
 - Enforce organization-level egress, retention, model, tool, and connector policy.
+- Allow `DataEgressDecision` to select `allow`, `pseudonymize`, `generalize`, `redact`, or `block` by data class and destination.
+- Treat credentials, passwords, API keys, access tokens, and equivalent secrets as blocked by default rather than merely masked.
+- Apply privacy controls to the complete outbound payload, including chat history, RAG context, attachments/OCR, connector data, and tool results—not only the latest user message.
 - Keep prompt-safe telemetry limited to hashes, identifiers, decisions, timings, counts, and approved derived metrics.
 - Preserve provenance from source retrieval through generated artifact or action.
 - Require administrative auditability for policy overrides and controlled live execution.
@@ -138,6 +143,22 @@ The plan is intentionally declarative. QYBE should first explain what it would d
 - QYBE retains authority over identity, RBAC, secrets, tools, connectors, model/runtime resolution, data classification, egress, provenance, persistence, telemetry, and artifacts.
 - Follow the dedicated [PraisonAI workflow runtime integration plan](PRAISONAI_WORKFLOW_RUNTIME_PLAN.md). PraisonAI is a high-opportunity isolated adapter candidate and reference implementation, not the QYBE orchestration or policy authority.
 
+### 4.11 External-model privacy gateway and reversible pseudonymization
+
+- Introduce a QYBE-owned, provider-neutral `ExternalModelPrivacyGateway` governed by a declarative `PrivacyTransformationPlan`.
+- Place the gateway after final outbound-context assembly and policy evaluation, immediately before any approved external model or tool request.
+- Detect sensitive content through a hybrid local pipeline: deterministic recognizers and validators, a local multilingual NER/PII model, organization dictionaries, and secret scanning. No single generative model is sufficient as the only control.
+- Support direct identifiers and organization-defined confidential entities, including people, email addresses, phone numbers, addresses, identifiers, customer names, internal projects, hostnames, contract references, commercial values, credentials, and secrets.
+- Replace permitted sensitive values with typed opaque placeholders such as `⟪PERSON_01_A7F2⟫` and `⟪EMAIL_01_B91C⟫`. Preserve referential consistency inside a conversation while rotating tokens across conversations and tenants.
+- Keep the reversible mapping in a local `SecureMappingVault` with strict tenant/conversation isolation, memory-first storage, bounded TTL, encryption if persistence is required, and no raw-value or mapping telemetry.
+- Validate returned placeholders exactly before local rehydration. Never restore unknown, malformed, cross-session, or model-invented placeholders.
+- Scan the external model response locally before rehydration and before display or downstream tool execution, because a model can generate new sensitive-looking values or corrupt placeholders.
+- Support policy-selected actions per entity class: pseudonymize, generalize, irreversibly redact, allow, or block. Organization policy overrides any user-selected privacy mode.
+- Expose a simple optional preview of what will leave the local environment and which values were transformed, without revealing secrets in logs or administrative telemetry.
+- Start in audit/shadow mode: record entity types, counts, confidence, proposed actions, latency, and placeholder-integrity results without changing the outbound request.
+- Treat pseudonymization as risk reduction, not guaranteed anonymization or an exemption from privacy, contractual, or regulatory obligations.
+- Evaluate recall and precision by entity class, secret-detection failures, placeholder preservation, rehydration correctness, answer-quality impact, latency, cross-tenant isolation, prompt-injection resistance, and zero mapping/raw-value egress.
+
 ## 5. Context and cost optimization track
 
 QYBE should have a provider-neutral `ContextOptimizationPlan` between runtime planning and the final model request. It may select deterministic reduction, cache alignment, retrieval compaction, reversible storage, or passthrough based on content type, sensitivity, task risk, model context, and measured benefit.
@@ -155,6 +176,8 @@ The target interface should describe:
 - audit/shadow/active mode.
 
 This track must remain independent of any single optimization library.
+
+`ContextOptimizationPlan` and `PrivacyTransformationPlan` are separate policy layers. Context optimization must preserve protected placeholders and evidence metadata, while privacy transformation is applied to the final provider-bound payload after context assembly and before external transmission.
 
 ## 6. Headroom evaluation and decision
 
@@ -177,7 +200,6 @@ Headroom is relevant in two distinct scopes.
 It may reduce paid coding-agent input/output during long QYBE development sessions, particularly when sessions contain repeated JSON, command output, build/test logs, diffs, issue data, and accumulated tool results.
 
 This use is outside the QYBE product runtime:
-
 ```text
 Claude Code / Codex / supported coding agent
   -> local Headroom proxy or wrapper
@@ -286,12 +308,15 @@ Every candidate optimization must compare baseline and optimized runs using the 
 | Latency | compression time, time to first token, total time, p50/p95/p99 |
 | Cost | provider cost saved minus additional infrastructure/compute cost |
 | Reliability | passthrough rate, proxy errors, timeout rate, recovery behavior |
-| Privacy | emitted telemetry fields, local stored content, retention and deletion verification |
+| Privacy | PII/secret recall by class, placeholder integrity, mapping isolation, emitted telemetry fields, local stored content, retention and deletion verification |
 | Operability | health checks, observability, upgrade/rollback effort, configuration drift |
 
 Minimum product-pilot gates:
 
 - no raw prompt or private-content telemetry;
+- no original sensitive values, reversible mappings, or mapping keys in provider payloads, logs, traces, or telemetry;
+- defined minimum detection recall by entity class, with fail-closed handling for credentials and secrets;
+- exact placeholder validation and tenant/session isolation before rehydration;
 - no reduction in authorization or provenance metadata;
 - no material regression in task success or tool-call correctness;
 - measurable net benefit after compression and retrieval overhead;
@@ -309,7 +334,12 @@ Do not:
 - rely on Headroom telemetry as QYBE product telemetry;
 - expose provider credentials to an unauthenticated or network-accessible proxy;
 - treat reported upstream benchmark percentages as QYBE performance evidence;
-- allow `headroom learn` to modify tracked repository instructions automatically.
+- allow `headroom learn` to modify tracked repository instructions automatically;
+- treat reversible pseudonymization as full anonymization or as a substitute for a valid egress decision;
+- send mapping dictionaries, original sensitive values, or rehydration keys to an external provider;
+- rely on a small generative model as the only PII/secret detector;
+- reuse stable pseudonyms across tenants or unrelated conversations without explicit policy;
+- rehydrate placeholders that are unknown, malformed, or outside the current session.
 
 Prefer:
 
@@ -319,24 +349,33 @@ Prefer:
 - local execution with telemetry disabled;
 - content-addressed, bounded, reversible storage;
 - QYBE-specific golden datasets and adversarial tests;
-- a simple passthrough fallback.
+- a simple passthrough fallback;
+- deterministic validators plus local NER and tenant-specific recognizers;
+- typed, opaque, session-scoped placeholders and a bounded local mapping vault;
+- exact response-token validation, output scanning, and fail-closed secret handling.
 
 ## 10. Roadmap priority
 
 1. Stabilize the fresh QYBE/Onyx foundation, development workflow, branding, localization, and upstream upgrade process.
 2. Continue shadow orchestration, preferences, `CapabilityPlan`, and evaluation APIs.
 3. Implement data classification, egress decisions, and declarative tool/model/runtime plans.
-4. Define `WorkflowDefinition`, `WorkflowRun`, `WorkflowRuntimeAdapter`, and workflow-aware `ExecutionGraphPreview` contracts.
-5. Build the template-first Academic Research and Writing workflow with evidence, outline approval, bounded chapter generation, citation checks, and editable artifact output.
-6. Evaluate an isolated PraisonAI shadow adapter after QYBE policy, model, tool, persistence, and event boundaries are enforceable.
-7. Add controlled live workflow execution, checkpoints, pause/resume, cancellation, retries, and hard budgets behind feature flags.
-8. Define the provider-neutral web discovery and browser-execution contracts, then run a shadow extraction PoC with static HTTP, Lightpanda, and Chromium fallback on a representative QYBE corpus.
-9. Define the visual-reasoning capability contract and complete the PenEcho architecture, security, and licensing evaluation for engineering and academic domain packs.
-10. Run the developer-side Headroom pilot in parallel because it is isolated from product runtime.
-11. Add `ContextOptimizationPlan` and a Headroom shadow adapter only after policy boundaries are stable.
-12. Consider controlled production workflow execution, browser routing, and context optimization only after QYBE-specific quality, provenance, privacy, security, compatibility, latency, licensing, durability, and rollback gates pass.
+4. Define `PrivacyTransformationPlan`, local sensitive-entity detection, typed placeholders, and the `SecureMappingVault`; run the external-model privacy gateway in shadow mode before any controlled pseudonymized egress.
+5. Define `WorkflowDefinition`, `WorkflowRun`, `WorkflowRuntimeAdapter`, and workflow-aware `ExecutionGraphPreview` contracts.
+6. Build the template-first Academic Research and Writing workflow with evidence, outline approval, bounded chapter generation, citation checks, and editable artifact output.
+7. Evaluate an isolated PraisonAI shadow adapter after QYBE policy, model, tool, persistence, and event boundaries are enforceable.
+8. Add controlled live workflow execution, checkpoints, pause/resume, cancellation, retries, and hard budgets behind feature flags.
+9. Define the provider-neutral web discovery and browser-execution contracts, then run a shadow extraction PoC with static HTTP, Lightpanda, and Chromium fallback on a representative QYBE corpus.
+10. Define the visual-reasoning capability contract and complete the PenEcho architecture, security, and licensing evaluation for engineering and academic domain packs.
+11. Run the developer-side Headroom pilot in parallel because it is isolated from product runtime.
+12. Add `ContextOptimizationPlan` and a Headroom shadow adapter only after policy boundaries are stable.
+13. Consider controlled production workflow execution, privacy-preserving external inference, browser routing, and context optimization only after QYBE-specific quality, provenance, privacy, security, compatibility, latency, licensing, durability, and rollback gates pass.
 
 ## 11. Decision log
+
+- **2026-07-30 — External-model privacy gateway:** adopt reversible pseudonymization as a QYBE-owned, provider-neutral capability for policy-approved external inference, not as a provider-specific feature.
+- **2026-07-30 — Privacy boundary:** sensitive-entity detection and mapping remain local. The cloud provider receives only the policy-approved transformed payload; reversible mappings, original values, and keys never leave the tenant environment.
+- **2026-07-30 — Detection strategy:** combine deterministic recognizers and validators, local multilingual NER/PII models, tenant dictionaries, and secret scanning. A small generative model may assist but must not be the sole privacy control.
+- **2026-07-30 — Privacy rollout:** begin with shadow detection and egress preview, then controlled typed-placeholder pseudonymization, exact response validation, local rehydration, and output rescanning behind feature flags. Pseudonymization is risk reduction, not guaranteed anonymization.
 
 - **2026-07-27 — PraisonAI opportunity:** high strategic fit for user-defined and domain-template workflows, especially research, planning, iterative generation, validation, and artifact production.
 - **2026-07-27 — PraisonAI boundary:** QYBE owns the canonical workflow schema, policy enrichment, model/tool brokers, run state, provenance, telemetry, and user experience. PraisonAI is a replaceable isolated runtime adapter candidate.
