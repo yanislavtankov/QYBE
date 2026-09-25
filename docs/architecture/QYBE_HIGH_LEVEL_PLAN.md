@@ -1,7 +1,7 @@
 # QYBE High-Level Development Plan
 
 **Status:** Directional architecture and roadmap  
-**Updated:** 2026-07-27  
+**Updated:** 2026-09-25  
 **Base branch:** `dev`  
 **Implementation rule:** roadmap items do not enable production behavior by themselves.
 
@@ -81,6 +81,7 @@ The plan is intentionally declarative. QYBE should first explain what it would d
 - Track runtime metadata such as context limit, quantization, throughput, latency, concurrency, tool support, multimodal support, and hardware requirements.
 - Support Ollama first while keeping adapters open for vLLM, TensorRT-LLM, SGLang, LiteLLM, and later runtimes.
 - Treat runtime recommendations as advisory until benchmarked on EdgeXpert/DGX Spark.
+- Track Xiaomi MiMo-V2.6-Pro, MiMo-V2.6-Flash and MiMo-V2.6-Distill-Qwen-9B as replaceable candidate models: local 9B feasibility first, larger Flash/Pro through an optional policy-approved API; keep the existing router, local-first preference, and provider-neutral runtime contracts. Follow the [MiMo integration evaluation and benchmark plan](XIAOMI_MIMO_MODEL_INTEGRATION_PLAN.md).
 
 ### 4.4 Privacy, security, and governance
 
@@ -333,8 +334,9 @@ Prefer:
 8. Define the provider-neutral web discovery and browser-execution contracts, then run a shadow extraction PoC with static HTTP, Lightpanda, and Chromium fallback on a representative QYBE corpus.
 9. Define the visual-reasoning capability contract and complete the PenEcho architecture, security, and licensing evaluation for engineering and academic domain packs.
 10. Run the developer-side Headroom pilot in parallel because it is isolated from product runtime.
-11. Add `ContextOptimizationPlan` and a Headroom shadow adapter only after policy boundaries are stable.
-12. Consider controlled production workflow execution, browser routing, and context optimization only after QYBE-specific quality, provenance, privacy, security, compatibility, latency, licensing, durability, and rollback gates pass.
+11. Evaluate the distilled MiMo-V2.6 9B model in an isolated local EdgeXpert pilot; separately evaluate MiMo Flash/Pro API on policy-approved tasks before making them selectable in controlled QYBE execution.
+12. Add `ContextOptimizationPlan` and a Headroom shadow adapter only after policy boundaries are stable.
+13. Consider controlled production workflow execution, browser routing, and context optimization only after QYBE-specific quality, provenance, privacy, security, compatibility, latency, licensing, durability, and rollback gates pass.
 
 ## 11. Decision log
 
@@ -351,3 +353,5 @@ Prefer:
 - **2026-07-23 — Headroom:** useful enough to retain in the roadmap as a developer-efficiency pilot and future optional context-optimization adapter. It is not approved as a QYBE core runtime dependency or default proxy.
 - **2026-07-23 — Integration boundary:** QYBE owns policy and the `ContextOptimizationPlan`; Headroom, QYBE-native compaction, and future alternatives are replaceable implementations.
 - **2026-07-23 — Rollout:** telemetry off, audit/shadow first, deterministic structured-output optimization before ML compression, and mandatory baseline benchmarking.
+
+- **2026-09-25 — Xiaomi MiMo-V2.6:** added as an optional, replaceable model family for QYBE: 9B local pilot, Flash/Pro external API pilots only with explicit egress approval; no automatic activation, router replacement, hardcoded global preference or production implementation is authorized by the evaluation plan.
