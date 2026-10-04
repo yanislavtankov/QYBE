@@ -1,7 +1,7 @@
 # QYBE High-Level Development Plan
 
 **Status:** Directional architecture and roadmap  
-**Updated:** 2026-09-25  
+**Updated:** 2026-10-04  
 **Base branch:** `dev`  
 **Implementation rule:** roadmap items do not enable production behavior by themselves.
 
@@ -138,6 +138,18 @@ The plan is intentionally declarative. QYBE should first explain what it would d
 - Define a QYBE-owned `WorkflowRuntimeAdapter` so QYBE-native, PraisonAI, and future runtimes remain replaceable.
 - QYBE retains authority over identity, RBAC, secrets, tools, connectors, model/runtime resolution, data classification, egress, provenance, persistence, telemetry, and artifacts.
 - Follow the dedicated [PraisonAI workflow runtime integration plan](PRAISONAI_WORKFLOW_RUNTIME_PLAN.md). PraisonAI is a high-opportunity isolated adapter candidate and reference implementation, not the QYBE orchestration or policy authority.
+
+### 4.11 Persistent coworker workspaces and governed computers
+
+- Make the planned QYBE Work experience a first-class architecture layer built around a provider-neutral `TaskWorkspace`, persistent artifacts/evidence, run state, worker assignments, approvals, and project-scoped preferences.
+- Add a QYBE-owned `WorkerProfile` / `AgentProfile` model for dynamically created or reusable specialists. Agent definitions request capabilities but never bypass the router, policy, model resolver, runtime resolver, or tool authorization.
+- Define an `AgentComputerProvider` for isolated persistent browser profiles, scoped workspace files, optional bounded shell/code execution, computer snapshots, human takeover/handback, permission revocation, and action audit events.
+- Keep isolated agent computers separate from a future trusted QYBE Desktop Bridge. Containers must not silently fall back to host files/shell; Windows/macOS application automation requires explicit per-application permission and a different trust boundary.
+- Standardize `ApprovalGate` and provider-neutral `ExecutionEvent` contracts so browser/computer activity, tool calls, model/runtime resolution, artifacts, approvals, pause/resume/cancel and progress can be rendered consistently across web, mobile, desktop and channels.
+- Evaluate AG-UI as an interoperability/event-stream adapter rather than a mandatory QYBE runtime protocol.
+- Preserve QYBE/Onyx as the source of truth for identity, tenancy, RBAC, persistence, RAG, connectors, provenance, policy and long-running workflow state; CopilotKit Intelligence, Channels and Learning may be optional adapters only.
+- Treat OpenDots' current background runner and recurring schedules as reference UX, not as the QYBE durable workflow engine. QYBE `WorkflowRun` / `TaskRun` must support restart-safe checkpoints, leases, idempotency, retries, conditions/events, budgets and long-duration work.
+- Follow the dedicated [OpenDots persistent agent workspace integration plan](OPENDOTS_PERSISTENT_AGENT_WORKSPACE_PLAN.md). OpenDots/OpenBot are high-value reference implementations for QYBE Work and governed computers, not replacements for the QYBE control plane.
 
 ## 5. Context and cost optimization track
 
@@ -328,17 +340,26 @@ Prefer:
 2. Continue shadow orchestration, preferences, `CapabilityPlan`, and evaluation APIs.
 3. Implement data classification, egress decisions, and declarative tool/model/runtime plans.
 4. Define `WorkflowDefinition`, `WorkflowRun`, `WorkflowRuntimeAdapter`, and workflow-aware `ExecutionGraphPreview` contracts.
-5. Build the template-first Academic Research and Writing workflow with evidence, outline approval, bounded chapter generation, citation checks, and editable artifact output.
-6. Evaluate an isolated PraisonAI shadow adapter after QYBE policy, model, tool, persistence, and event boundaries are enforceable.
-7. Add controlled live workflow execution, checkpoints, pause/resume, cancellation, retries, and hard budgets behind feature flags.
-8. Define the provider-neutral web discovery and browser-execution contracts, then run a shadow extraction PoC with static HTTP, Lightpanda, and Chromium fallback on a representative QYBE corpus.
-9. Define the visual-reasoning capability contract and complete the PenEcho architecture, security, and licensing evaluation for engineering and academic domain packs.
-10. Run the developer-side Headroom pilot in parallel because it is isolated from product runtime.
-11. Evaluate the distilled MiMo-V2.6 9B model in an isolated local EdgeXpert pilot; separately evaluate MiMo Flash/Pro API on policy-approved tasks before making them selectable in controlled QYBE execution.
-12. Add `ContextOptimizationPlan` and a Headroom shadow adapter only after policy boundaries are stable.
-13. Consider controlled production workflow execution, browser routing, and context optimization only after QYBE-specific quality, provenance, privacy, security, compatibility, latency, licensing, durability, and rollback gates pass.
+5. Define the QYBE Work contract layer: `TaskWorkspace`, `WorkerProfile`, `ExecutionEvent`, `ApprovalGate`, and `AgentComputerProvider`, using OpenDots/OpenBot as reference implementations without delegating QYBE policy or persistence.
+6. Build the template-first Academic Research and Writing workflow with evidence, outline approval, bounded chapter generation, citation checks, and editable artifact output.
+7. Evaluate an isolated PraisonAI shadow adapter after QYBE policy, model, tool, persistence, and event boundaries are enforceable.
+8. Add controlled live workflow execution, checkpoints, pause/resume, cancellation, retries, and hard budgets behind feature flags.
+9. Run an EdgeXpert PoC for isolated persistent agent computers: separate browser profiles/workspaces, scoped file/shell permissions, human takeover, revocation and restart persistence. Keep the future Windows/macOS Desktop Bridge as a separate higher-trust provider.
+10. Define the provider-neutral web discovery and browser-execution contracts, then run a shadow extraction PoC with static HTTP, Lightpanda, and Chromium fallback on a representative QYBE corpus.
+11. Define the visual-reasoning capability contract and complete the PenEcho architecture, security, and licensing evaluation for engineering and academic domain packs.
+12. Run the developer-side Headroom pilot in parallel because it is isolated from product runtime.
+13. Evaluate the distilled MiMo-V2.6 9B model in an isolated local EdgeXpert pilot; separately evaluate MiMo Flash/Pro API on policy-approved tasks before making them selectable in controlled QYBE execution.
+14. Add `ContextOptimizationPlan` and a Headroom shadow adapter only after policy boundaries are stable.
+15. Consider controlled production workflow execution, governed computer routing, browser routing, desktop application control, and context optimization only after QYBE-specific quality, provenance, privacy, security, compatibility, latency, licensing, durability, and rollback gates pass.
 
 ## 11. Decision log
+
+- **2026-10-04 — OpenDots:** retained as a high-value reference implementation for QYBE Work, persistent specialists, task workspaces, human approval, per-agent computers, multi-surface continuity, and learning/skill-delivery patterns.
+- **2026-10-04 — OpenDots boundary:** QYBE keeps orchestration, router/model/runtime resolution, identity/RBAC, connectors, policy, persistence, workflow run state, provenance and audit as canonical authorities. CopilotKit/OpenDots services remain optional adapters or code references.
+- **2026-10-04 — Agent computers:** add a provider-neutral `AgentComputerProvider` and first EdgeXpert isolated-computer PoC. No agent computer may silently fall back to host files or shell.
+- **2026-10-04 — Desktop boundary:** local Windows/macOS application automation is a separate trusted QYBE Desktop Bridge provider with explicit user/app permissions, visible control and stronger audit; it is not treated as an ordinary sandbox computer.
+- **2026-10-04 — AG-UI:** evaluate as an interoperability/event-stream adapter after the canonical QYBE `ExecutionEvent` model is defined; do not make it a mandatory control-plane dependency.
+- **2026-10-04 — Maturity:** OpenDots is alpha and only days old at evaluation time; no production dependency is approved without QYBE-specific security, durability, tenancy and scalability validation.
 
 - **2026-07-27 — PraisonAI opportunity:** high strategic fit for user-defined and domain-template workflows, especially research, planning, iterative generation, validation, and artifact production.
 - **2026-07-27 — PraisonAI boundary:** QYBE owns the canonical workflow schema, policy enrichment, model/tool brokers, run state, provenance, telemetry, and user experience. PraisonAI is a replaceable isolated runtime adapter candidate.
