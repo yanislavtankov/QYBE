@@ -1,7 +1,7 @@
 # QYBE High-Level Development Plan
 
 **Status:** Directional architecture and roadmap  
-**Updated:** 2026-09-25  
+**Updated:** 2026-10-04  
 **Base branch:** `dev`  
 **Implementation rule:** roadmap items do not enable production behavior by themselves.
 
@@ -138,6 +138,16 @@ The plan is intentionally declarative. QYBE should first explain what it would d
 - Define a QYBE-owned `WorkflowRuntimeAdapter` so QYBE-native, PraisonAI, and future runtimes remain replaceable.
 - QYBE retains authority over identity, RBAC, secrets, tools, connectors, model/runtime resolution, data classification, egress, provenance, persistence, telemetry, and artifacts.
 - Follow the dedicated [PraisonAI workflow runtime integration plan](PRAISONAI_WORKFLOW_RUNTIME_PLAN.md). PraisonAI is a high-opportunity isolated adapter candidate and reference implementation, not the QYBE orchestration or policy authority.
+
+### 4.11 Agent control plane and durable task execution
+
+- Retain a future QYBE-owned **Agent Control Plane** for durable task execution below the router/policy layers and above replaceable workflow/agent runtimes.
+- Keep the control plane task-centric rather than exposing an AI-organization hierarchy as the primary end-user model.
+- Define provider-neutral contracts for task/run state, atomic execution leases, runtime adapters, workspaces, artifacts, checkpoints, approvals, budgets, scoped secrets, skills, normalized run events, and sandbox/execution providers.
+- Use event/heartbeat-style bounded execution for long-running work so workers can wake, restore context, acquire a lease, execute a bounded step, checkpoint, and sleep rather than requiring permanent autonomous loops.
+- Keep QYBE authoritative for intent, organization policy, data classification, egress, model/runtime selection, tool authorization, knowledge/RAG, persistence, provenance, telemetry, and user experience.
+- Treat Paperclip as a high-value MIT-licensed reference implementation and later selective code-reuse candidate, not as a second application/control-plane authority and not as a current runtime dependency.
+- Follow the dedicated [Paperclip Agent Control Plane evaluation plan](PAPERCLIP_AGENT_CONTROL_PLANE_PLAN.md). The current phase is documentation-only; no Paperclip code, packages, schemas, services, containers, UI, or runtime behavior are authorized by this roadmap entry.
 
 ## 5. Context and cost optimization track
 
@@ -337,6 +347,7 @@ Prefer:
 11. Evaluate the distilled MiMo-V2.6 9B model in an isolated local EdgeXpert pilot; separately evaluate MiMo Flash/Pro API on policy-approved tasks before making them selectable in controlled QYBE execution.
 12. Add `ContextOptimizationPlan` and a Headroom shadow adapter only after policy boundaries are stable.
 13. Consider controlled production workflow execution, browser routing, and context optimization only after QYBE-specific quality, provenance, privacy, security, compatibility, latency, licensing, durability, and rollback gates pass.
+14. Define the QYBE Agent Control Plane contracts and perform a code-level Paperclip mapping only after the router/policy/workflow boundaries are stable; keep the first stage shadow-only and do not import Paperclip as a second application runtime.
 
 ## 11. Decision log
 
@@ -353,5 +364,9 @@ Prefer:
 - **2026-07-23 — Headroom:** useful enough to retain in the roadmap as a developer-efficiency pilot and future optional context-optimization adapter. It is not approved as a QYBE core runtime dependency or default proxy.
 - **2026-07-23 — Integration boundary:** QYBE owns policy and the `ContextOptimizationPlan`; Headroom, QYBE-native compaction, and future alternatives are replaceable implementations.
 - **2026-07-23 — Rollout:** telemetry off, audit/shadow first, deterministic structured-output optimization before ML compression, and mandatory baseline benchmarking.
+
+- **2026-10-04 — Paperclip:** retained as a high-priority reference implementation for a future QYBE Agent Control Plane covering durable tasks, execution leases, runtime adapters, workspaces, artifacts, approvals, budgets, scoped secrets, skills, and sandbox providers. No current runtime integration is approved.
+- **2026-10-04 — Paperclip boundary:** QYBE remains authoritative for routing, policy, data classification/egress, model and runtime resolution, tools, knowledge/RAG, canonical persistence, provenance, telemetry, and UX. Any later reuse must occur behind QYBE-owned contracts through selective port/reimplementation rather than wholesale embedding.
+- **2026-10-04 — Paperclip rollout:** documentation-only first; then code-level module mapping, QYBE contract design, shadow control-plane records, bounded single-run pilot, multi-agent/task-graph pilot, and portable execution providers only after measurable safety and durability gates.
 
 - **2026-09-25 — Xiaomi MiMo-V2.6:** added as an optional, replaceable model family for QYBE: 9B local pilot, Flash/Pro external API pilots only with explicit egress approval; no automatic activation, router replacement, hardcoded global preference or production implementation is authorized by the evaluation plan.
